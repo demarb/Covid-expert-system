@@ -27,3 +27,33 @@ store_symptom(Sym_in, Category_in, Severity_in):-
    (Severity_in==2) -> Severity = 'Severe'),
    %Assertz adds symptom to knowledge base
     assertz(symptom(of_type(Sym_in,Severity),belongs_to(Category))).
+
+%CreateList:-
+   %append(['All Symptoms'], [symptom(of_type(Sym_in,Severity),belongs_to(Category))], allSymptoms).
+
+
+gen_allSymptoms(Sym_in,Severity, Category,AllSymp):-
+   findall((Sym_in,Severity, Category), symptom(of_type(Sym_in,Severity),belongs_to(Category)),AllSymp),
+   write(AllSymp).
+
+
+save_symp_toFile:-
+   open('symptoms.txt', write, Stream),
+   findall((Sym_in,Severity, Category), symptom(of_type(Sym_in,Severity),belongs_to(Category)),AllSymp),
+   write(Stream, AllSymp), nl,
+  close(Stream).
+
+read_Symp:-
+   open('symptoms.txt', read, Stream),
+   get_char(Stream, Char1),
+   process_stream(Char1, Stream),
+   close(Stream).
+
+process_stream(end_of_file, _):- !.
+
+process_stream(Char, Stream):-
+   write(Char),
+   get_char(Stream, Char2),
+   process_stream(Char2, Stream).
+
+
