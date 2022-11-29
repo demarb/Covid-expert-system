@@ -16,23 +16,27 @@ main_menu:-nl,write('COVID EXPERT SYSTEM MENU'),nl,
    (nl, write('INVALID ENTRY')), nl, nl, main_menu).
 
 
-moh_subMenu:-nl,write('WECLOME TO COVID EXPERT SYSTEM MOH SUB MENU'),nl,
+moh_subMenu:-nl,nl,write('WECLOME TO COVID EXPERT SYSTEM MOH SUB MENU'),nl,
    write('OPTIONS [Select the corresponding number] : '), nl,
    write('(1) : Add Symptom to database'),nl,
    write('(2) : Add Underlying Conditions to database'),nl,
    write('(3) : Generate Report'),nl,
    write('(4) : Get Latest Advice for Current Data'),nl,
-   write('(5) : Return to Main Menu'),nl,
+   write('(5) : Display all Symptoms'),nl,
+   write('(6) : Display all Underlying Conditions'),nl,
+   write('(7) : Return to Main Menu'),nl,
    read(Choice),
    ((Choice==1) -> accept_symptom;
    (Choice==2) -> accept_cond;
    (Choice==3) -> get_report;
    (Choice==4) -> get_advice;
-   (Choice==5) -> (write('RETURNING TO MAIN MENU'),nl, main_menu);
+   (Choice==5) -> displayAllSymptoms;
+   (Choice==6) -> displayAllUnderlyingCond;
+   (Choice==7) -> (write('RETURNING TO MAIN MENU'),nl, main_menu);
    (nl, write('INVALID ENTRY')), nl, nl, moh_subMenu).
 
 
-user_subMenu:-nl, write('WELCOME TO COVID EXPERT SYSTEM USER SUB MENU'),nl,
+user_subMenu:-nl,nl, write('WELCOME TO COVID EXPERT SYSTEM USER SUB MENU'),nl,
    write('OPTIONS [Select the corresponding number] : '), nl,
    write('(1) : Check If You Possibly Have Covid'),nl,
    write('(2) : Return to Main Menu'),nl,
@@ -67,7 +71,10 @@ symptom(of_type('Skin rash',mild),belongs_to(['Original'])).
 symptom(of_type('Discolouration of fingers or toes',severe),belongs_to(['Original'])).
 symptom(of_type('Red or irritated eyes',mild),belongs_to(['Original'])).
 
-accept_symptom:-nl,write('Enter symptom : '), nl,
+accept_symptom:-nl,  % forall((symptom(of_type(Sym,Severity),belongs_to(Category))), Write(symptom(of_type(Sym,Severity),belongs_to(Category)))),
+   %findall((Sym_in,Severity, Category), symptom(of_type(Sym_in,Severity),belongs_to(Category)),AllSymp),
+   %write(AllSymp),
+    write('Enter symptom : '), nl,
     read(Sym_in),nl,
     write('What variant does your symptom apply to?'),nl,
     write('(1)-Original Variant Only,(2)-Omicron Only,(3)-Gamma Only,(4)-Original + Omicron,(5)-Original + Gamma,(6)-Omicron + Gamma,(7)-All 3 Variants,'),nl,
@@ -88,7 +95,10 @@ store_symptom(Sym_in, Category_in, Severity_in):-
    ((Severity_in==1) -> Severity = 'mild';
    (Severity_in==2) -> Severity = 'severe'),
    %Assertz adds symptom to knowledge base
-    assertz(symptom(of_type(Sym_in,Severity),belongs_to(Category))).
+    assertz(symptom(of_type(Sym_in,Severity),belongs_to(Category))),
+    nl, write('SYMPTOM ADDED TO DATABASE'),nl,
+     write('CURRENT LIST OF SYMPTOMS : '),nl,
+   displayAllSymptoms.
 
 
 
@@ -120,8 +130,20 @@ get_report:-nl, write('GENERATING REPORT'),nl.
 get_advice:-nl, write('GENERATING ADVICE'),nl.
 
 
+displayAllSymptoms:-
+   (symptom(of_type(Sym_in,Severity),belongs_to(Category)),
+   nl,write(Sym_in), write('-'), write(Severity), write('-'),  write(Category), false); moh_subMenu.
+
+displayAllUnderlyingCond:- (underlying_Cond(Condition),
+   write(Condition), write(', '), false); moh_subMenu.
+
+
+
 accept_user_detail:-nl, write('DO YOU HAVE COVID CHECKER? - Please answer the following questions'),nl,
-   write('Enter your temperature in Fahrenheits').
+   write('Enter your temperature in Fahrenheits'),
+   read(TempFhr),
+   TempCel is ((TempFhr - 32)* (5/9)),
+   write(TempCel).
 
 
 
@@ -137,6 +159,7 @@ accept_user_detail:-nl, write('DO YOU HAVE COVID CHECKER? - Please answer the fo
 
 %CreateList:-
    %append(['All Symptoms'], [symptom(of_type(Sym_in,Severity),belongs_to(Category))], allSymptoms).
+
 
 
 gen_allSymptoms(Sym_in,Severity, Category,AllSymp):-
