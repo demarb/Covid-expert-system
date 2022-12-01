@@ -1,5 +1,6 @@
 :-dynamic symptom/2.
 :-dynamic underlying_Cond/1.
+:-dynamic user/5.
 /*
 Artifical Intelligence Project - Covid Expert System
 Group Memebers & ID:
@@ -122,7 +123,7 @@ underlying_Cond('tuberculosis').
 
 accept_cond:-nl,write('Enter underlying conditions : '), nl,
     read(Cond_in),nl,
-    assertz(underlying_Cond(Cond_in)).
+    assertz(underlying_Cond(Cond_in)), displayAllUnderlyingCond.
 
 
 get_report:-nl, write('GENERATING REPORT'),nl.
@@ -140,25 +141,118 @@ displayAllUnderlyingCond:- (underlying_Cond(Condition),
 
 
 accept_user_detail:-nl, write('DO YOU HAVE COVID CHECKER? - Please answer the following questions'),nl,
+   write('Enter your first name'),
+   read(F_name),nl,
    write('Enter your temperature in Fahrenheits'),
    read(TempFhr),
    TempCel is ((TempFhr - 32)* (5/9)),
-   write(TempCel).
+   write(TempCel),
+   nl, write('Are you experiencing any of the following symptoms: dizziness, fainting or blurred vision'),
+   write('Enter (1) for Yes OR (2) for No'),
+   read(Choice),
+   ((Choice==1) -> SpecialSymp = 'Yes';
+   (Choice==2) -> SpecialSymp = 'No'),
+   nl, write(SpecialSymp),
+   nl, write('Enter your blood pressure - systolic value'),nl,
+   read(Sys_pressure),
+   nl, write('Enter your blood pressure - diastolic  value'),nl,
+   read(Dias_pressure),
+   (((Sys_pressure<90),(Dias_pressure<60)) -> IsLowPressure = 'Yes';
+   IsLowPressure = 'No'),
+   nl, write(IsLowPressure),
+   nl,checkSymptoms(User_Mild, User_Severe, User_Original, User_Omicron, User_Gamma),
+   nl, checkUnderlyingCond(User_Condition),
+   nl, checkForCovid(F_name, TempCel, SpecialSymp, IsLowPressure, User_Mild, User_Severe, User_Original, User_Omicron, User_Gamma, User_Condition).
+
+
+in_list(X,[X|_]).
+in_list(X,[_|T]) :- in_list(X,T).
+
+
+checkSymptoms(User_Mild, User_Severe, User_Original, User_Omicron, User_Gamma):-(
+   (nl, nl, write('Are you experiencing any of the following mild symptoms: - select (1) for Yes and (2) for No'),nl,
+   (symptom(of_type(Sym_in,Severity),belongs_to(Category)),
+    (Severity == mild),
+    write(Sym_in),nl, false);
+   nl, read(MildChk),
+    (MildChk == 1 -> User_Mild = 'Yes';
+    MildChk == 2 -> User_Mild = 'No'),
+    write('User has Mild symptoms?: ') ,write(User_Mild)),
+
+   (nl, nl, write('Are you experiencing any of the following severe symptoms: - select (1) for Yes and (2) for No'),nl,
+   (symptom(of_type(Sym_in,Severity),belongs_to(Category)),
+    (Severity == severe),
+    write(Sym_in),nl, false);
+   nl, read(SevereChk),
+    (SevereChk == 1 -> User_Severe = 'Yes';
+    SevereChk == 2 -> User_Severe = 'No'),
+    write('User has Severe symptoms?: ') ,write(User_Severe)),
+
+    (nl, nl, write('Are you experiencing any of the following original variant symptoms: - select (1) for Yes and (2) for No'),nl,
+   (symptom(of_type(Sym_in,Severity),belongs_to(Category)),
+    in_list('Original', Category),    write(Sym_in),nl, false);
+    nl, read(OriginalVariantChk),
+    (OriginalVariantChk == 1 -> User_Original = 'Yes';
+    OriginalVariantChk == 2 -> User_Original = 'No'),
+    write('User has Original Variant symptoms?: ') ,write(User_Original)),
+
+    (nl, nl, write('Are you experiencing any of the following omicron variant symptoms: - select (1) for Yes and (2) for No'),nl,
+   (symptom(of_type(Sym_in,Severity),belongs_to(Category)),
+    in_list('Omicron', Category),    write(Sym_in),nl, false);
+    nl, read(OmicronVariantChk),
+    (OmicronVariantChk == 1 -> User_Omicron = 'Yes';
+    OmicronVariantChk == 2 -> User_Omicron = 'No'),
+    write('User has Omicron Variant symptoms?: ') ,write(User_Omicron)),
+
+    (nl, nl, write('Are you experiencing any of the following gamma variant symptoms: - select (1) for Yes and (2) for No'),nl,
+   (symptom(of_type(Sym_in,Severity),belongs_to(Category)),
+    in_list('Gamma', Category),    write(Sym_in),nl, false);
+    nl, read(GammaVariantChk),
+    (GammaVariantChk == 1 -> User_Gamma = 'Yes';
+    GammaVariantChk == 2 -> User_Gamma = 'No'),
+    write('User has Gamma Variant symptoms?: ') ,write(User_Gamma))
+
+).
+
+
+checkUnderlyingCond(User_Condition):-
+   (nl, nl, write('Have you ever been diagnosed with any of the following conditions: - How many have you been diagnosed with?'),nl,
+   (underlying_Cond(Condition),
+    write(Condition),nl, false);
+   nl, read(User_Condition),
+   write('User has underlying Condition? COUNT: ') ,write(User_Condition)).
+
+%Test user
+user(name('ben'), general_data(33, 'Yes', 'Yes'), hasSeverity('Yes', 'No'), hasVariants('No', 'Yes', 'No'), countUnderlying(2)).
+
+checkForCovid(F_name, TempCel, SpecialSymp, IsLowPressure, User_Mild, User_Severe, User_Original, User_Omicron, User_Gamma, User_Condition):-
+   nl,write('RESULTS: '),nl,
+   (nl,write('You possible have the following Variants: '),nl,
+   ((User_Original == 'Yes'),(User_Omicron == 'Yes'), (User_Gamma == 'Yes')) -> (write('Any of the three Variant'),nl);
+   ((User_Original == 'Yes'),(User_Omicron == 'Yes')) -> (write('Original or Omicron Variant'),nl);
+   ((User_Original == 'Yes'),(User_Gamma == 'Yes')) -> (write('Original or Gamma Variant'),nl);
+   ((User_Omicron == 'Yes'), (User_Gamma == 'Yes')) -> (write('Omicron or Gamma Variant'),nl);
+   ((User_Original == 'Yes')) -> (write('Original Variant'),nl);
+   ((User_Omicron == 'Yes')) -> (write('Omicron Variant'),nl);
+   ((User_Gamma == 'Yes')) -> (write('Gamma Variant'),nl);
+   ((User_Original == 'Yes'),(User_Omicron == 'Yes'), (User_Gamma == 'Yes')) -> (write('No Variant Detected. You likely do not have Covid!.'),nl,nl)),
+
+   ( (User_Mild=='Yes')-> (nl,write('ADVICE: Mild symptoms were detected. Self isolate and get tested as soon as possible'));
+   write('---')),
+   ( (User_Severe=='Yes')-> (nl,write('ADVICE: Severe symptoms were detected. Call ahead to your local emergency facility. Urgent care may be needed.')) ;
+   write('---')),
+
+   (((User_Omicron == 'Yes'), (User_Condition>3))-> (nl,write('IMPORTANT: More than 3 underlying conditions were detected. You face significant risk of hospitalization and Death because the Omicron Variant was detected')) ;
+   write('---')),
+
+
+   (assertz(user(name(F_name), general_data(TempCel, SpecialSymp, IsLowPressure), hasSeverity(User_Mild, User_Severe), hasVariants(User_Original, User_Omicron, User_Gamma), countUnderlying(User_Condition)))),
+
+   user_subMenu.
 
 
 
 
-
-
-
-
-
-
-
-
-
-%CreateList:-
-   %append(['All Symptoms'], [symptom(of_type(Sym_in,Severity),belongs_to(Category))], allSymptoms).
 
 
 
