@@ -4,6 +4,10 @@
 /*
 Artifical Intelligence Project - Covid Expert System
 Group Memebers & ID:
+Brianna Philp 1903475
+Demar Brown 1901599
+Stephan Williams 1901898
+Toniann Osbourne 1704288
 
 */
 
