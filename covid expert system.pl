@@ -7,6 +7,7 @@ Group Memebers & ID:
 
 */
 
+%Main Menu to be ran at command line
 main_menu:-nl,write('COVID EXPERT SYSTEM MENU'),nl,
    write('Are you Ministry of Health or User?'),nl,
    write('Enter (1) for MOH OR (2) for User OR (3) to exit program'),nl,
@@ -16,7 +17,7 @@ main_menu:-nl,write('COVID EXPERT SYSTEM MENU'),nl,
    (Choice==3) -> write('END OF COVID EXPERT PROGRAM');
    (nl, write('INVALID ENTRY')), nl, nl, main_menu).
 
-
+%Ministry of Health Sub Menu
 moh_subMenu:-nl,nl,write('WECLOME TO COVID EXPERT SYSTEM MOH SUB MENU'),nl,
    write('OPTIONS [Select the corresponding number] : '), nl,
    write('(1) : Add Symptom to database'),nl,
@@ -36,7 +37,7 @@ moh_subMenu:-nl,nl,write('WECLOME TO COVID EXPERT SYSTEM MOH SUB MENU'),nl,
    (Choice==7) -> (write('RETURNING TO MAIN MENU'),nl, main_menu);
    (nl, write('INVALID ENTRY')), nl, nl, moh_subMenu).
 
-
+%User Sub menu
 user_subMenu:-nl,nl, write('WELCOME TO COVID EXPERT SYSTEM USER SUB MENU'),nl,
    write('OPTIONS [Select the corresponding number] : '), nl,
    write('(1) : Check If You Possibly Have Covid'),nl,
@@ -45,7 +46,6 @@ user_subMenu:-nl,nl, write('WELCOME TO COVID EXPERT SYSTEM USER SUB MENU'),nl,
    ((Choice==1) -> accept_user_detail;
    (Choice==2) -> (write('RETURNING TO MAIN MENU'),nl, main_menu);
    (nl, write('INVALID ENTRY')), nl, nl, user_subMenu).
-
 
 %Built in symptoms
 symptom(of_type(fever,mild),belongs_to(['Original'|[ 'Omicron', 'Gamma']])).
@@ -72,10 +72,9 @@ symptom(of_type('Skin rash',mild),belongs_to(['Original'])).
 symptom(of_type('Discolouration of fingers or toes',severe),belongs_to(['Original'])).
 symptom(of_type('Red or irritated eyes',mild),belongs_to(['Original'])).
 
-accept_symptom:-nl,  % forall((symptom(of_type(Sym,Severity),belongs_to(Category))), Write(symptom(of_type(Sym,Severity),belongs_to(Category)))),
-   %findall((Sym_in,Severity, Category), symptom(of_type(Sym_in,Severity),belongs_to(Category)),AllSymp),
-   %write(AllSymp),
-    write('Enter symptom : '), nl,
+%Accepts a symptom from MOH
+accept_symptom:-nl,
+   write('Enter symptom : '), nl,
     read(Sym_in),nl,
     write('What variant does your symptom apply to?'),nl,
     write('(1)-Original Variant Only,(2)-Omicron Only,(3)-Gamma Only,(4)-Original + Omicron,(5)-Original + Gamma,(6)-Omicron + Gamma,(7)-All 3 Variants,'),nl,
@@ -84,7 +83,7 @@ accept_symptom:-nl,  % forall((symptom(of_type(Sym,Severity),belongs_to(Category
    read(Severity_in),write('INPUT ACCEPTED'),
    store_symptom(Sym_in, Category_in, Severity_in).
 
-
+%Stores accepted symptom to database
 store_symptom(Sym_in, Category_in, Severity_in):-
    ((Category_in==1) -> Category = ['Original'];
    (Category_in==2) -> Category = ['Omicron'];
@@ -100,8 +99,6 @@ store_symptom(Sym_in, Category_in, Severity_in):-
     nl, write('SYMPTOM ADDED TO DATABASE'),nl,
      write('CURRENT LIST OF SYMPTOMS : '),nl,
    displayAllSymptoms.
-
-
 
 %Built in Underlying Conditions
 underlying_Cond('Asthma').
@@ -121,25 +118,29 @@ underlying_Cond('primary immunodeficiencies').
 underlying_Cond('Transplantation').
 underlying_Cond('tuberculosis').
 
+%Accepts a new underlying condition from user
 accept_cond:-nl,write('Enter underlying conditions : '), nl,
     read(Cond_in),nl,
     assertz(underlying_Cond(Cond_in)), displayAllUnderlyingCond.
 
+get_report:-nl, write('GENERATING REPORT'),nl,nl,
 
-get_report:-nl, write('GENERATING REPORT'),nl.
+   user(name(F_name), general_data(TempCel, SpecialSymp, IsLowPressure), hasSeverity(User_Mild, User_Severe), hasVariants(User_Original, User_Omicron, User_Gamma), countUnderlying(User_Condition)),
+   nl,write('Name: '), write(F_name),  write(' -Temperature: '),write(TempCel),  write(' -Any special symptoms? '),write(SpecialSymp),  write(' -Has Low Pressure: '),write(IsLowPressure),  write(' -Has Mild Symptoms: '),write(User_Mild),  write(' -Has Severe Symptoms: '),write(User_Severe),  write(' -Has Original Variant: '),write(User_Original),  write(' -Has Original variant: '),write(User_Omicron),  write(' -Has gamma variant: '),write(User_Gamma),  write(' -# of Underlying Conditions: '),write(User_Condition),nl,nl,false.
+
 
 get_advice:-nl, write('GENERATING ADVICE'),nl.
 
-
+%Displays all symptoms in the database
 displayAllSymptoms:-
    (symptom(of_type(Sym_in,Severity),belongs_to(Category)),
    nl,write(Sym_in), write('-'), write(Severity), write('-'),  write(Category), false); moh_subMenu.
 
+%Displays all underlying conditions in the database
 displayAllUnderlyingCond:- (underlying_Cond(Condition),
    write(Condition), write(', '), false); moh_subMenu.
 
-
-
+%Accepts user data to check for covid
 accept_user_detail:-nl, write('DO YOU HAVE COVID CHECKER? - Please answer the following questions'),nl,
    write('Enter your first name'),
    read(F_name),nl,
@@ -164,11 +165,12 @@ accept_user_detail:-nl, write('DO YOU HAVE COVID CHECKER? - Please answer the fo
    nl, checkUnderlyingCond(User_Condition),
    nl, checkForCovid(F_name, TempCel, SpecialSymp, IsLowPressure, User_Mild, User_Severe, User_Original, User_Omicron, User_Gamma, User_Condition).
 
-
+%ALlows us to check if X exists within some list
 in_list(X,[X|_]).
 in_list(X,[_|T]) :- in_list(X,T).
 
 
+%Checks and sets the categories of symptoms user may have
 checkSymptoms(User_Mild, User_Severe, User_Original, User_Omicron, User_Gamma):-(
    (nl, nl, write('Are you experiencing any of the following mild symptoms: - select (1) for Yes and (2) for No'),nl,
    (symptom(of_type(Sym_in,Severity),belongs_to(Category)),
@@ -214,7 +216,7 @@ checkSymptoms(User_Mild, User_Severe, User_Original, User_Omicron, User_Gamma):-
 
 ).
 
-
+%Checks underllying conditions the user may have
 checkUnderlyingCond(User_Condition):-
    (nl, nl, write('Have you ever been diagnosed with any of the following conditions: - How many have you been diagnosed with?'),nl,
    (underlying_Cond(Condition),
@@ -225,6 +227,7 @@ checkUnderlyingCond(User_Condition):-
 %Test user
 user(name('ben'), general_data(33, 'Yes', 'Yes'), hasSeverity('Yes', 'No'), hasVariants('No', 'Yes', 'No'), countUnderlying(2)).
 
+% Checks which covid user may have and provides advice based on their type and symptom severity
 checkForCovid(F_name, TempCel, SpecialSymp, IsLowPressure, User_Mild, User_Severe, User_Original, User_Omicron, User_Gamma, User_Condition):-
    nl,write('RESULTS: '),nl,
    (nl,write('You possible have the following Variants: '),nl,
