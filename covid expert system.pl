@@ -4,7 +4,10 @@
 /*
 Artifical Intelligence Project - Covid Expert System
 Group Memebers & ID:
-
+Demar Brown 1901599
+Brianna Philp 1903475
+Stephan Williams 1901898
+Toniann Osbourne 1704288
 */
 
 %Main Menu to be ran at command line
@@ -125,8 +128,8 @@ accept_cond:-nl,write('Enter underlying conditions : '), nl,
 
 get_report:-nl, write('GENERATING REPORT'),nl,nl,
 
-   user(name(F_name), general_data(TempCel, SpecialSymp, IsLowPressure), hasSeverity(User_Mild, User_Severe), hasVariants(User_Original, User_Omicron, User_Gamma), countUnderlying(User_Condition)),
-   nl,write('Name: '), write(F_name),  write(' -Temperature: '),write(TempCel),  write(' -Any special symptoms? '),write(SpecialSymp),  write(' -Has Low Pressure: '),write(IsLowPressure),  write(' -Has Mild Symptoms: '),write(User_Mild),  write(' -Has Severe Symptoms: '),write(User_Severe),  write(' -Has Original Variant: '),write(User_Original),  write(' -Has Original variant: '),write(User_Omicron),  write(' -Has gamma variant: '),write(User_Gamma),  write(' -# of Underlying Conditions: '),write(User_Condition),nl,nl,false.
+   (   user(name(F_name), general_data(TempCel, SpecialSymp, IsLowPressure), hasSeverity(User_Mild, User_Severe), hasVariants(User_Original, User_Omicron, User_Gamma), countUnderlying(User_Condition)),
+   nl,write('Name: '), write(F_name),  write(' -Temperature: '),write(TempCel),  write(' -Any special symptoms? '),write(SpecialSymp),  write(' -Has Low Pressure: '),write(IsLowPressure),  write(' -Has Mild Symptoms: '),write(User_Mild),  write(' -Has Severe Symptoms: '),write(User_Severe),  write(' -Has Original Variant: '),write(User_Original),  write(' -Has Original variant: '),write(User_Omicron),  write(' -Has gamma variant: '),write(User_Gamma),  write(' -# of Underlying Conditions: '),write(User_Condition),nl,nl,false);save_symp_toFile.
 
 
 get_advice:-nl, write('GENERATING ADVICE'),nl.
@@ -255,17 +258,23 @@ checkForCovid(F_name, TempCel, SpecialSymp, IsLowPressure, User_Mild, User_Sever
 
 
 
+save_symp_toFile:-
+   open('users.txt', write, Stream),
+   findall((F_name, TempCel, SpecialSymp, IsLowPressure, User_Mild, User_Severe, User_Original, User_Omicron, User_Gamma, User_Condition), user(name(F_name), general_data(TempCel, SpecialSymp, IsLowPressure), hasSeverity(User_Mild, User_Severe), hasVariants(User_Original, User_Omicron, User_Gamma), countUnderlying(User_Condition)),AllUsers),
+   write(Stream, AllUsers), nl,
+  close(Stream).
 
 
 
-
+/*
 gen_allSymptoms(Sym_in,Severity, Category,AllSymp):-
+   findall((Sym_in,Severity, Category), gen_allSymptoms(Sym_in,Severity, Category,AllSymp):-
    findall((Sym_in,Severity, Category), symptom(of_type(Sym_in,Severity),belongs_to(Category)),AllSymp),
+   write(AllSymp), AllSymp),
    write(AllSymp).
 
-
 save_symp_toFile:-
-   open('symptoms.txt', write, Stream),
+   open('users.txt', write, Stream),
    findall((Sym_in,Severity, Category), symptom(of_type(Sym_in,Severity),belongs_to(Category)),AllSymp),
    write(Stream, AllSymp), nl,
   close(Stream).
@@ -289,3 +298,4 @@ save_symp_toFile2:-
    forall(symptom(of_type(Sym_in,Severity),belongs_to(Category)), write(Stream, symptom(of_type(Sym_in,Severity),belongs_to(Category)))), nl,
   close(Stream).
 
+*/
