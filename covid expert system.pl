@@ -4,10 +4,13 @@
 /*
 Artifical Intelligence Project - Covid Expert System
 Group Memebers & ID:
-Demar Brown 1901599
+<<<<<<< HEAD
 Brianna Philp 1903475
+Demar Brown 1901599
 Stephan Williams 1901898
 Toniann Osbourne 1704288
+
+>>>>>>> 5da463f919431200b3978e66202065b18bda1b20
 */
 
 %Main Menu to be ran at command line
